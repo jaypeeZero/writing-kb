@@ -1,0 +1,10 @@
+[project]
+name = "writing-kb"
+version = "0.1.0"
+description = "Writing knowledge base MCP server"
+requires-python = ">=3.13"
+dependencies = [
+    "httpx>=0.28.1",
+    "mcp[cli]>=1.26.0",
+    "uvicorn>=0.42.0",
+]

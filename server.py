@@ -17,11 +17,11 @@ if TOKEN:
     HEADERS["Authorization"] = f"Bearer {TOKEN}"
 
 EXCLUDED = {
-    "server.py", "requirements.txt", "Dockerfile",
+    "server.py", "pyproject.toml", "uv.lock", "Dockerfile",
     "README.md", "PLAN.md", "LICENSE", ".gitignore",
 }
 
-mcp = FastMCP("writing_kb")
+mcp = FastMCP("writing_kb", host="0.0.0.0", port=PORT)
 
 
 async def _github_get(path: str) -> httpx.Response:
@@ -112,4 +112,4 @@ async def kb_search(query: str) -> str:
 
 
 if __name__ == "__main__":
-    mcp.run(transport="streamable-http", host="0.0.0.0", port=PORT)
+    mcp.run(transport="streamable-http")
