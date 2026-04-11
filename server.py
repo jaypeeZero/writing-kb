@@ -1,29 +1,21 @@
-"""Writing KB MCP server — reads Markdown from GitHub, hosted on Render."""
+"""Writing KB MCP server — reads Markdown from local filesystem, hosted on Render."""
 
 import os
 import re
-from base64 import b64decode
 from collections import defaultdict
+from pathlib import Path
+from urllib.parse import unquote
 
-import httpx
 from breame.spelling import get_american_spelling
 from mcp.server.fastmcp import FastMCP
 from rank_bm25 import BM25Plus
 
-REPO = os.environ.get("KB_REPO", "yourusername/writing-kb")
-BRANCH = os.environ.get("KB_BRANCH", "main")
-TOKEN = os.environ.get("KB_GITHUB_TOKEN", "")
 PORT = int(os.environ.get("PORT", "10000"))
 
-API = f"https://api.github.com/repos/{REPO}"
-HEADERS = {"Accept": "application/vnd.github.v3+json"}
-if TOKEN:
-    HEADERS["Authorization"] = f"Bearer {TOKEN}"
+KB_DIR = Path(__file__).parent
 
-EXCLUDED = {
-    "server.py", "pyproject.toml", "uv.lock", "Dockerfile",
-    "README.md", "PLAN.md", "LICENSE", ".gitignore",
-}
+# Only files within these top-level directories are ever served.
+CONTENT_DIRS = {"craft", "style", "structure"}
 
 mcp = FastMCP("writing_kb", host="0.0.0.0", port=PORT)
 
@@ -150,35 +142,13 @@ class SearchIndex:
 _search_index = SearchIndex()
 
 
-async def _initialize_search_index():
-    """Build the search index from all KB files."""
-    files = await _list_files()
-    all_sections = []
-    for f in files:
-        resp = await _github_get(f"contents/{f['path']}?ref={BRANCH}")
-        if resp.status_code == 200:
-            content = b64decode(resp.json()["content"]).decode("utf-8")
-            all_sections.extend(parse_sections(content, f["path"]))
-    _search_index.build(all_sections)
-
-
-async def _github_get(path: str) -> httpx.Response:
-    async with httpx.AsyncClient() as client:
-        return await client.get(f"{API}/{path}", headers=HEADERS, timeout=10)
-
-
-async def _list_files(subpath: str = "") -> list[dict]:
-    """Recursively list .md files from the GitHub repo."""
-    resp = await _github_get(f"contents/{subpath}?ref={BRANCH}")
-    resp.raise_for_status()
-    files: list[dict] = []
-    for item in resp.json():
-        if item["name"] in EXCLUDED or item["name"].startswith("."):
-            continue
-        if item["type"] == "file" and item["name"].endswith(".md"):
-            files.append(item)
-        elif item["type"] == "dir":
-            files.extend(await _list_files(item["path"]))
+def _list_md_files() -> list[Path]:
+    """List .md files strictly within the allowed content directories."""
+    files = []
+    for d in CONTENT_DIRS:
+        p = KB_DIR / d
+        if p.is_dir():
+            files.extend(p.rglob("*.md"))
     return files
 
 
@@ -192,13 +162,64 @@ def _safe_path(path: str) -> str:
     return normalized
 
 
-async def _fetch_file(path: str) -> str | None:
-    """Fetch and decode a file from GitHub. Returns None on 404."""
-    resp = await _github_get(f"contents/{path}?ref={BRANCH}")
-    if resp.status_code == 404:
+def _read_file(path: str) -> str | None:
+    """Read a markdown file from disk. Returns None if not found or outside CONTENT_DIRS."""
+    full = (KB_DIR / path).resolve()
+    try:
+        rel = full.relative_to(KB_DIR.resolve())
+    except ValueError:
         return None
-    resp.raise_for_status()
-    return b64decode(resp.json()["content"]).decode("utf-8")
+    if rel.parts[0] not in CONTENT_DIRS:
+        return None
+    return full.read_text("utf-8") if full.is_file() else None
+
+
+def _initialize_search_index():
+    """Build the search index from all KB files."""
+    all_sections = []
+    for p in _list_md_files():
+        rel = str(p.relative_to(KB_DIR))
+        content = p.read_text("utf-8")
+        all_sections.extend(parse_sections(content, rel))
+    _search_index.build(all_sections)
+
+
+
+@mcp.resource("writing-kb://{path}")
+def kb_resource(path: str) -> str:
+    """Read a KB article as an MCP resource (e.g. writing-kb://craft/dialogue.md)."""
+    path = unquote(path)
+    try:
+        safe = _safe_path(path)
+    except ValueError as e:
+        return str(e)
+    normalized = safe if safe.endswith(".md") else f"{safe}.md"
+    content = _read_file(normalized)
+    return content or f"Not found: {normalized}"
+
+
+def _register_kb_resources():
+    """Register each KB file as a concrete resource so resources/list is populated."""
+    from mcp.server.fastmcp.resources.types import FunctionResource
+    for p in _list_md_files():
+        rel = str(p.relative_to(KB_DIR))
+        uri = f"writing-kb://{rel}"
+        def _make_reader(path: str):
+            def reader() -> str:
+                content = _read_file(path)
+                return content or f"Not found: {path}"
+            return reader
+        mcp.add_resource(FunctionResource.from_function(
+            fn=_make_reader(rel),
+            uri=uri,
+            name=rel,
+            mime_type="text/plain",
+        ))
+
+
+_register_kb_resources()
+
+
 
 
 @mcp.tool(
@@ -213,10 +234,9 @@ async def kb_list_topics(path: str = "") -> str:
               If provided (e.g. 'craft/dialogue'), returns the section headers for that article.
     """
     if not path:
-        files = await _list_files()
         by_category: dict[str, list[str]] = {}
-        for f in files:
-            parts = f["path"].split("/")
+        for p in _list_md_files():
+            parts = p.relative_to(KB_DIR).parts
             category = parts[0] if len(parts) > 1 else "general"
             name = parts[-1].removesuffix(".md")
             by_category.setdefault(category, []).append(name)
@@ -230,7 +250,7 @@ async def kb_list_topics(path: str = "") -> str:
     except ValueError as e:
         return str(e)
     normalized = safe_path if safe_path.endswith(".md") else f"{safe_path}.md"
-    content = await _fetch_file(normalized)
+    content = _read_file(normalized)
     if content is None:
         return f"Error: Article not found: {normalized}"
 
@@ -262,7 +282,7 @@ async def kb_read(path: str, section: str = "") -> str:
     except ValueError as e:
         return str(e)
     normalized = safe_path if safe_path.endswith(".md") else f"{safe_path}.md"
-    content = await _fetch_file(normalized)
+    content = _read_file(normalized)
     if content is None:
         return f"Error: Article not found: {normalized}"
 
@@ -294,7 +314,7 @@ async def kb_search(query: str) -> str:
         query: Natural language query (e.g. 'how do I write dialogue in a combat scene').
     """
     if not _search_index._indexed:
-        await _initialize_search_index()
+        _initialize_search_index()
 
     results = _search_index.search(query, top_n=5)
 
@@ -320,4 +340,3 @@ if __name__ == "__main__":
     app.router.routes.append(Route("/health", health))
 
     uvicorn.run(app, host="0.0.0.0", port=PORT)
-
