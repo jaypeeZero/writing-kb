@@ -67,17 +67,33 @@ async def kb_list_topics() -> str:
     )
 
 
+def _safe_path(path: str) -> str:
+    """Validate and normalize a relative path - prevents traversal attacks."""
+    # Normalize first: collapse multiple slashes, strip leading/trailing slashes
+    normalized = "/".join(p for p in path.split("/") if p)
+    # Reject backslashes or parent traversal after normalization
+    if "\\" in normalized or ".." in normalized:
+        raise ValueError(f"Invalid path: {path}")
+    if not normalized:
+        raise ValueError("Empty path")
+    return normalized
+
+
 @mcp.tool(
     name="kb_read",
     annotations={
         "readOnlyHint": True,
         "destructiveHint": False,
-        "openWorldHint": False,
+        "openWorldHint": True,
     },
 )
 async def kb_read(path: str) -> str:
     """Read a knowledge base article by relative path (e.g. 'craft/dialogue')."""
-    normalized = path if path.endswith(".md") else f"{path}.md"
+    try:
+        safe_path = _safe_path(path)
+    except ValueError as e:
+        return str(e)
+    normalized = safe_path if safe_path.endswith(".md") else f"{safe_path}.md"
     resp = await _github_get(f"contents/{normalized}?ref={BRANCH}")
     if resp.status_code == 404:
         return f"Error: Article not found: {normalized}"
