@@ -4,6 +4,8 @@ version = "0.1.0"
 description = "Writing knowledge base MCP server"
 requires-python = ">=3.13"
 dependencies = [
+    "breame>=0.1.2",
+    "fastapi>=0.135.3",
     "httpx>=0.28.1",
     "mcp[cli]>=1.26.0",
     "pytest>=9.0.3",

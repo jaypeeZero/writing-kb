@@ -3,8 +3,10 @@
 import os
 import re
 from base64 import b64decode
+from collections import defaultdict
 
 import httpx
+from breame.spelling import get_american_spelling
 from mcp.server.fastmcp import FastMCP
 from rank_bm25 import BM25Plus
 
@@ -71,38 +73,78 @@ def parse_sections(content: str, filepath: str) -> list[dict]:
 
 
 class SearchIndex:
-    """BM25-based search index for KB sections."""
+    """Multi-signal search index combining BM25 (full + title), token coverage, and bigram proximity via RRF."""
 
     def __init__(self):
         self.documents: list[dict] = []
-        self.bm25: BM25Plus | None = None
+        self.bm25_full: BM25Plus | None = None
+        self.bm25_title: BM25Plus | None = None
+        self._doc_token_sets: list[set[str]] = []
+        self._doc_bigram_sets: list[set[tuple[str, str]]] = []
         self._indexed = False
 
     def _tokenize(self, text: str) -> list[str]:
-        return re.findall(r"[a-z]+", text.lower())
+        """Lowercase, extract words, normalise British/American spelling variants."""
+        return [get_american_spelling(w) for w in re.findall(r"[a-z]+", text.lower())]
+
+    def _bigrams(self, tokens: list[str]) -> set[tuple[str, str]]:
+        return {(tokens[i], tokens[i + 1]) for i in range(len(tokens) - 1)}
 
     def build(self, sections: list[dict]):
         self.documents = sections
         if not sections:
             self._indexed = True
             return
-        corpus = [self._tokenize(doc["section_title"] + " " + doc["content"]) for doc in sections]
-        self.bm25 = BM25Plus(corpus)
+
+        full = [self._tokenize(d["section_title"] + " " + d["content"]) for d in sections]
+        titles = [self._tokenize(d["section_title"]) or [""] for d in sections]
+
+        self._doc_token_sets = [set(t) for t in full]
+        self._doc_bigram_sets = [self._bigrams(t) for t in full]
+        self.bm25_full = BM25Plus(full)
+        self.bm25_title = BM25Plus(titles)
         self._indexed = True
 
+    def _rank_bm25(self, bm25: BM25Plus, query_tokens: list[str]) -> list[int]:
+        scores = bm25.get_scores(query_tokens)
+        return [i for i, _ in sorted(enumerate(scores), key=lambda x: x[1], reverse=True)]
+
+    def _rank_coverage(self, query_tokens: list[str]) -> list[int]:
+        if not query_tokens:
+            return list(range(len(self.documents)))
+        query_set = set(query_tokens)
+        scores = [len(query_set & s) / len(query_set) for s in self._doc_token_sets]
+        return [i for i, _ in sorted(enumerate(scores), key=lambda x: x[1], reverse=True)]
+
+    def _rank_bigrams(self, query_tokens: list[str]) -> list[int]:
+        query_bigrams = self._bigrams(query_tokens)
+        if not query_bigrams:
+            return list(range(len(self.documents)))
+        scores = [len(query_bigrams & b) for b in self._doc_bigram_sets]
+        return [i for i, _ in sorted(enumerate(scores), key=lambda x: x[1], reverse=True)]
+
+    def _rrf(self, *ranked_lists: list[int], k: int = 60) -> list[int]:
+        scores: dict[int, float] = defaultdict(float)
+        for ranked in ranked_lists:
+            for rank, idx in enumerate(ranked):
+                scores[idx] += 1 / (k + rank)
+        return sorted(scores, key=lambda i: scores[i], reverse=True)
+
     def search(self, query: str, top_n: int = 5) -> list[dict]:
-        if not self._indexed or self.bm25 is None:
+        if not self._indexed or not self.documents:
             return []
-        query_tokens = self._tokenize(query)
-        scores = self.bm25.get_scores(query_tokens)
-        ranked = sorted(enumerate(scores), key=lambda x: x[1], reverse=True)[:top_n]
-        results = []
-        for idx, score in ranked:
-            if score > 0:
-                doc = self.documents[idx].copy()
-                doc["score"] = score
-                results.append(doc)
-        return results
+        tokens = self._tokenize(query)
+        query_set = set(tokens)
+        fused = self._rrf(
+            self._rank_bm25(self.bm25_full, tokens),
+            self._rank_bm25(self.bm25_title, tokens),
+            self._rank_coverage(tokens),
+            self._rank_bigrams(tokens),
+        )
+        return [
+            self.documents[i] for i in fused[:top_n]
+            if query_set & self._doc_token_sets[i]
+        ]
 
 
 _search_index = SearchIndex()
@@ -116,8 +158,7 @@ async def _initialize_search_index():
         resp = await _github_get(f"contents/{f['path']}?ref={BRANCH}")
         if resp.status_code == 200:
             content = b64decode(resp.json()["content"]).decode("utf-8")
-            sections = parse_sections(content, f["path"])
-            all_sections.extend(sections)
+            all_sections.extend(parse_sections(content, f["path"]))
     _search_index.build(all_sections)
 
 
@@ -162,33 +203,28 @@ async def _fetch_file(path: str) -> str | None:
 
 @mcp.tool(
     name="kb_list_topics",
-    annotations={"readOnlyHint": True, "destructiveHint": False, "openWorldHint": False},
-)
-async def kb_list_topics() -> str:
-    """List all knowledge base articles grouped by category."""
-    files = await _list_files()
-    by_category: dict[str, list[str]] = {}
-    for f in files:
-        parts = f["path"].split("/")
-        category = parts[0] if len(parts) > 1 else "general"
-        name = parts[-1].removesuffix(".md")
-        by_category.setdefault(category, []).append(name)
-    return "\n\n".join(
-        f"## {cat}\n" + "\n".join(f"- {t}" for t in sorted(topics))
-        for cat, topics in sorted(by_category.items())
-    )
-
-
-@mcp.tool(
-    name="kb_outline",
     annotations={"readOnlyHint": True, "destructiveHint": False, "openWorldHint": True},
 )
-async def kb_outline(path: str) -> str:
-    """List all section headers in a KB article. Use to navigate a file before reading a specific section.
+async def kb_list_topics(path: str = "") -> str:
+    """List knowledge base articles or the section outline of a specific article.
 
     Args:
-        path: Relative path to the article (e.g. 'craft/dialogue').
+        path: Optional. If omitted, lists all articles grouped by category.
+              If provided (e.g. 'craft/dialogue'), returns the section headers for that article.
     """
+    if not path:
+        files = await _list_files()
+        by_category: dict[str, list[str]] = {}
+        for f in files:
+            parts = f["path"].split("/")
+            category = parts[0] if len(parts) > 1 else "general"
+            name = parts[-1].removesuffix(".md")
+            by_category.setdefault(category, []).append(name)
+        return "\n\n".join(
+            f"## {cat}\n" + "\n".join(f"- {t}" for t in sorted(topics))
+            for cat, topics in sorted(by_category.items())
+        )
+
     try:
         safe_path = _safe_path(path)
     except ValueError as e:
@@ -219,7 +255,7 @@ async def kb_read(path: str, section: str = "") -> str:
 
     Args:
         path: Relative path to the article (e.g. 'craft/dialogue').
-        section: Optional section title (from kb_outline) to return just that section's content.
+        section: Optional section title (from kb_list_topics) to return just that section's content.
     """
     try:
         safe_path = _safe_path(path)
@@ -249,7 +285,10 @@ async def kb_read(path: str, section: str = "") -> str:
     annotations={"readOnlyHint": True, "destructiveHint": False, "openWorldHint": False},
 )
 async def kb_search(query: str) -> str:
-    """Search all KB articles using BM25 full-text ranking. Returns the most relevant sections with their content.
+    """Search all KB articles and return the most relevant sections.
+
+    Uses BM25 (full text + title), token coverage, and bigram proximity combined
+    via Reciprocal Rank Fusion for higher-quality results than any single method.
 
     Args:
         query: Natural language query (e.g. 'how do I write dialogue in a combat scene').
@@ -262,14 +301,23 @@ async def kb_search(query: str) -> str:
     if not results:
         return "No results found."
 
-    output = []
-    for r in results:
-        output.append(
-            f"### {r['filepath']} — {r['section_title']}\n\n{r['content']}"
-        )
-
-    return "\n\n---\n\n".join(output)
+    return "\n\n---\n\n".join(
+        f"### {r['filepath']} — {r['section_title']}\n\n{r['content']}"
+        for r in results
+    )
 
 
 if __name__ == "__main__":
-    mcp.run(transport="streamable-http")
+    import uvicorn
+    from starlette.responses import JSONResponse
+    from starlette.routing import Route
+
+    app = mcp.streamable_http_app()
+
+    async def health(request):
+        return JSONResponse({"status": "ok"})
+
+    app.router.routes.append(Route("/health", health))
+
+    uvicorn.run(app, host="0.0.0.0", port=PORT)
+

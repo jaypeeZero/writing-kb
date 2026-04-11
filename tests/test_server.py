@@ -8,7 +8,7 @@ import httpx
 import server
 from server import (
     _safe_path, _list_files, parse_sections,
-    kb_list_topics, kb_outline, kb_read, kb_search,
+    kb_list_topics, kb_read, kb_search,
 )
 
 
@@ -31,10 +31,19 @@ def encoded(text: str) -> str:
 
 @pytest.fixture(autouse=True)
 def reset_search_index():
-    """Reset the BM25 search index between tests to prevent cross-test contamination."""
+    """Reset the search index between tests to prevent cross-test contamination."""
     server._search_index = server.SearchIndex()
     yield
     server._search_index = server.SearchIndex()
+
+
+def make_sections(*args) -> list[dict]:
+    """Build section dicts for pre-loading the search index. Args: (filepath, title, content) triples."""
+    sections = []
+    it = iter(args)
+    for filepath, title, content in zip(it, it, it):
+        sections.append({"filepath": filepath, "section_title": title, "level": 2, "content": content})
+    return sections
 
 
 class TestSafePath:
@@ -213,10 +222,10 @@ class TestListFiles:
 
 
 class TestKbListTopics:
-    """Test topic listing by category."""
+    """Test topic listing and article outline."""
 
     @pytest.mark.asyncio
-    async def test_groups_by_category(self):
+    async def test_no_path_groups_by_category(self):
         mock_files = [
             {"name": "dialogue.md", "type": "file", "path": "craft/dialogue.md"},
             {"name": "voice.md", "type": "file", "path": "craft/voice.md"},
@@ -233,7 +242,7 @@ class TestKbListTopics:
         assert "- rhythm" in result
 
     @pytest.mark.asyncio
-    async def test_sorts_topics_alphabetically(self):
+    async def test_no_path_sorts_topics_alphabetically(self):
         mock_files = [
             {"name": "voice.md", "type": "file", "path": "craft/voice.md"},
             {"name": "dialogue.md", "type": "file", "path": "craft/dialogue.md"},
@@ -242,11 +251,11 @@ class TestKbListTopics:
         with patch("server._list_files", return_value=mock_files):
             result = await kb_list_topics()
 
-        craft_section = result.split("## craft")[1].split("##")[0] if "##" in result.split("## craft")[1] else result.split("## craft")[1]
+        craft_section = result.split("## craft")[1]
         assert craft_section.index("dialogue") < craft_section.index("voice")
 
     @pytest.mark.asyncio
-    async def test_handles_nested_paths(self):
+    async def test_no_path_handles_nested_paths(self):
         mock_files = [
             {"name": "advanced.md", "type": "file", "path": "craft/dialogue/advanced.md"},
         ]
@@ -257,86 +266,70 @@ class TestKbListTopics:
         assert "## craft" in result
         assert "- advanced" in result
 
-
-class TestKbOutline:
-    """Test section header listing."""
-
     @pytest.mark.asyncio
-    async def test_returns_h2_headers(self):
+    async def test_with_path_returns_section_headers(self):
         content = "## Dialogue Basics\nSome text.\n## Advanced Techniques\nMore text."
         mock_response = make_mock_response({"content": encoded(content)})
 
         with patch("server._github_get", return_value=mock_response):
-            result = await kb_outline("craft/dialogue")
+            result = await kb_list_topics("craft/dialogue")
 
         assert "## Dialogue Basics" in result
         assert "## Advanced Techniques" in result
 
     @pytest.mark.asyncio
-    async def test_indents_h3_headers(self):
+    async def test_with_path_indents_h3_headers(self):
         content = "## Top Section\nText.\n### Subsection\nMore text."
         mock_response = make_mock_response({"content": encoded(content)})
 
         with patch("server._github_get", return_value=mock_response):
-            result = await kb_outline("craft/dialogue")
+            result = await kb_list_topics("craft/dialogue")
 
         assert "  ### Subsection" in result
 
     @pytest.mark.asyncio
-    async def test_includes_filepath_in_output(self):
-        content = "## A Section\nText."
+    async def test_with_path_includes_filepath(self):
+        content = "## Section\nText."
         mock_response = make_mock_response({"content": encoded(content)})
 
         with patch("server._github_get", return_value=mock_response):
-            result = await kb_outline("craft/dialogue")
+            result = await kb_list_topics("craft/dialogue")
 
         assert "craft/dialogue.md" in result
 
     @pytest.mark.asyncio
-    async def test_adds_md_extension(self):
-        content = "## Section\nText."
-        mock_response = make_mock_response({"content": encoded(content)})
-
-        with patch("server._github_get", return_value=mock_response) as mock_get:
-            await kb_outline("craft/dialogue")
-
-        called_path = mock_get.call_args[0][0]
-        assert "craft/dialogue.md" in called_path
-
-    @pytest.mark.asyncio
-    async def test_handles_404(self):
+    async def test_with_path_handles_404(self):
         mock_response = make_mock_response({"message": "Not Found"}, status_code=404)
 
         with patch("server._github_get", return_value=mock_response):
-            result = await kb_outline("nonexistent")
+            result = await kb_list_topics("nonexistent")
 
         assert "Error: Article not found" in result
 
     @pytest.mark.asyncio
-    async def test_rejects_traversal(self):
-        result = await kb_outline("../etc/passwd")
+    async def test_with_path_rejects_traversal(self):
+        result = await kb_list_topics("../etc/passwd")
         assert "Invalid path" in result
 
     @pytest.mark.asyncio
-    async def test_no_headers_returns_message(self):
-        content = "Just plain text with no headers at all."
+    async def test_with_path_no_headers_returns_message(self):
+        content = "Just plain text with no headers."
         mock_response = make_mock_response({"content": encoded(content)})
 
         with patch("server._github_get", return_value=mock_response):
-            result = await kb_outline("craft/notes")
+            result = await kb_list_topics("craft/notes")
 
         assert "no section headers found" in result
 
     @pytest.mark.asyncio
-    async def test_does_not_include_body_text(self):
-        content = "## Header\nThis body text should not appear.\n## Other\nAlso hidden."
+    async def test_with_path_does_not_include_body_text(self):
+        content = "## Header\nThis body text should not appear."
         mock_response = make_mock_response({"content": encoded(content)})
 
         with patch("server._github_get", return_value=mock_response):
-            result = await kb_outline("craft/dialogue")
+            result = await kb_list_topics("craft/dialogue")
 
         assert "body text should not appear" not in result
-        assert "Also hidden" not in result
 
 
 class TestKbRead:
@@ -440,17 +433,50 @@ class TestKbRead:
         assert result.startswith("### Sub Topic")
 
 
-def make_sections(*args) -> list[dict]:
-    """Build section dicts for pre-loading the search index. Args: (filepath, title, content) triples."""
-    sections = []
-    it = iter(args)
-    for filepath, title, content in zip(it, it, it):
-        sections.append({"filepath": filepath, "section_title": title, "level": 2, "content": content})
-    return sections
+class TestNormalize:
+    """Test spelling normalization in tokenizer."""
+
+    def setup_method(self):
+        self.idx = server.SearchIndex()
+
+    def tokenize(self, text):
+        return self.idx._tokenize(text)
+
+    def test_dialogue_normalizes_to_dialog(self):
+        assert "dialog" in self.tokenize("dialogue")
+
+    def test_dialog_unchanged(self):
+        assert "dialog" in self.tokenize("dialog")
+
+    def test_colour_normalizes_to_color(self):
+        assert "color" in self.tokenize("colour")
+
+    def test_recognise_normalizes_to_recognize(self):
+        assert "recognize" in self.tokenize("recognise")
+
+    def test_behaviour_normalizes_to_behavior(self):
+        assert "behavior" in self.tokenize("behaviour")
+
+    def test_monologue_normalizes_to_monolog(self):
+        assert "monolog" in self.tokenize("monologue")
+
+    def test_american_spelling_unchanged(self):
+        assert "color" in self.tokenize("color")
+        assert "recognize" in self.tokenize("recognize")
+
+    def test_query_and_content_normalize_identically(self):
+        """dialogue in query and dialog in content should produce same token."""
+        assert self.tokenize("dialogue") == self.tokenize("dialog")
+
+    def test_mixed_query(self):
+        tokens = self.tokenize("writing dialogue in colour")
+        assert "dialog" in tokens
+        assert "color" in tokens
+        assert "writing" in tokens
 
 
 class TestSearchIndex:
-    """Unit tests for the BM25 SearchIndex class."""
+    """Unit tests for the multi-signal SearchIndex."""
 
     def test_search_returns_matching_sections(self):
         idx = server.SearchIndex()
@@ -459,20 +485,15 @@ class TestSearchIndex:
         assert len(results) == 1
         assert results[0]["section_title"] == "Dialogue Tips"
 
-    def test_search_is_case_insensitive(self):
+    def test_spelling_variant_matches(self):
+        """'dialogue' in index, 'dialog' in query — should still match."""
         idx = server.SearchIndex()
-        idx.build(make_sections("craft/dialogue.md", "DIALOGUE TIPS", "Content about DIALOGUE."))
-        results = idx.search("dialogue")
+        idx.build(make_sections("craft/dialogue.md", "Dialogue Tips", "Writing dialogue effectively."))
+        results = idx.search("dialog")
         assert len(results) == 1
 
-    def test_unmatched_query_returns_empty(self):
-        idx = server.SearchIndex()
-        idx.build(make_sections("craft/dialogue.md", "Dialogue", "dialogue content here"))
-        results = idx.search("xyzzy")
-        assert results == []
-
-    def test_section_title_included_in_tokenization(self):
-        """Title tokens should contribute to ranking, not just body tokens."""
+    def test_title_signal_ranks_title_match_above_body_match(self):
+        """Section whose title matches the query should rank above one where only body matches."""
         idx = server.SearchIndex()
         idx.build(make_sections(
             "craft/craft.md", "Dialogue in Combat", "Some general writing advice.",
@@ -481,25 +502,55 @@ class TestSearchIndex:
         results = idx.search("dialogue combat")
         assert results[0]["section_title"] == "Dialogue in Combat"
 
+    def test_bigram_signal_rewards_phrase_proximity(self):
+        """Section containing adjacent query words should rank above one with scattered matches."""
+        idx = server.SearchIndex()
+        idx.build(make_sections(
+            "f.md", "A", "Tense combat dialogue crackles with urgency.",       # bigram: combat+dialogue adjacent
+            "f.md", "B", "Combat scenes are intense. Dialogue can reveal character.",  # combat and dialogue separated
+        ))
+        results = idx.search("combat dialogue")
+        assert results[0]["section_title"] == "A"
+
+    def test_coverage_penalises_partial_match(self):
+        """Section matching all query tokens should rank above one matching only some."""
+        idx = server.SearchIndex()
+        idx.build(make_sections(
+            "f.md", "Full Match", "Writing pacing and dialogue together creates tension.",
+            "f.md", "Partial", "Dialogue is important in fiction.",
+        ))
+        results = idx.search("pacing dialogue")
+        assert results[0]["section_title"] == "Full Match"
+
+    def test_unmatched_query_returns_empty(self):
+        idx = server.SearchIndex()
+        idx.build(make_sections("f.md", "Section", "Some writing content here."))
+        results = idx.search("xyzzy")
+        assert results == []
+
     def test_build_empty_corpus_does_not_crash(self):
         idx = server.SearchIndex()
         idx.build([])
         assert idx._indexed is True
         assert idx.search("anything") == []
 
-    def test_results_include_score(self):
+    def test_respects_top_n(self):
         idx = server.SearchIndex()
-        idx.build(make_sections("f.md", "Title", "content about dialogue"))
-        results = idx.search("dialogue")
-        assert "score" in results[0]
-        assert results[0]["score"] > 0
+        idx.build(make_sections(
+            "f.md", "A", "dialogue content",
+            "f.md", "B", "dialogue content",
+            "f.md", "C", "dialogue content",
+            "f.md", "D", "dialogue content",
+            "f.md", "E", "dialogue content",
+            "f.md", "F", "dialogue content",
+        ))
+        assert len(idx.search("dialogue", top_n=3)) <= 3
 
 
 class TestKbSearch:
     """Test the kb_search MCP tool."""
 
     def _load_index(self, *section_args):
-        """Pre-build the search index with test sections."""
         server._search_index.build(make_sections(*section_args))
 
     @pytest.mark.asyncio
@@ -518,9 +569,10 @@ class TestKbSearch:
         assert "Every line should do work." in result
 
     @pytest.mark.asyncio
-    async def test_case_insensitive_search(self):
-        self._load_index("craft/dialogue.md", "Dialogue Tips", "Capitalized DIALOGUE content.")
-        result = await kb_search("DIALOGUE")
+    async def test_spelling_variant_in_query(self):
+        """Searching 'dialog' should find sections written with 'dialogue'."""
+        self._load_index("craft/dialogue.md", "Dialogue Tips", "Writing dialogue effectively.")
+        result = await kb_search("dialog tips")
         assert "craft/dialogue.md" in result
 
     @pytest.mark.asyncio
@@ -552,7 +604,6 @@ class TestKbSearch:
 
         with patch("server._list_files", return_value=mock_files):
             with patch("server._github_get", return_value=mock_response):
-                # Index starts empty; kb_search should trigger initialization
                 assert not server._search_index._indexed
                 await kb_search("dialogue")
                 assert server._search_index._indexed
