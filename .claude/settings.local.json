@@ -2,7 +2,9 @@
   "permissions": {
     "allow": [
       "WebSearch",
-      "Bash(uv run:*)"
+      "Bash(uv run:*)",
+      "WebFetch(domain:pypi.org)",
+      "WebFetch(domain:github.com)"
     ]
   }
 }
