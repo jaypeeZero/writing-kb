@@ -73,6 +73,37 @@ Dialogue is not information exchange — it's characters trying to get what they
 
 **Redundant scenes.** Two scenes that make the same point. A character is told "you carry too much" in one scene and then told "you carry too much" in the next. The second scene needs to escalate — new angle, higher stakes, a cost the first scene didn't have — or it's doing the same work twice.
 
+## From the Masters
+
+### O'Connor — "A Good Man Is Hard to Find": Scene Escalation
+
+The final scene with the Misfit is textbook escalation under maximum pressure.
+
+**Goal:** The grandmother wants to survive.
+**Resistance:** The Misfit has a gun and a philosophy.
+**Escalation:** She tries flattery ("I know you're a good man"), appeals to family ("You wouldn't shoot a lady"), then religion ("Pray! Jesus"). Each tactic fails. Each failure narrows her options. Meanwhile, family members are taken into the woods in pairs.
+**Crisis:** Nothing left — no argument, no leverage, no escape.
+**Climax:** She reaches out and touches the Misfit — "Why you're one of my babies." An involuntary gesture that surprises even her.
+**Resolution:** He shoots her. "She would of been a good woman if it had been somebody there to shoot her every minute of her life."
+
+O'Connor herself said the grandmother "is in the most significant position life offers the Christian." Every beat escalates. Her tactics degrade from calculated to desperate to involuntary. The scene's turn — her one genuine moment — becomes possible only after everything else has been stripped away.
+
+### Chekhov — "The Kiss": The Turn That Isn't
+
+A shy, awkward officer named Ryabovich accidentally receives a kiss in a dark room from a woman who mistook him for someone else. Chekhov expands the moment: darkness, perfume, softness of cheek, the sound of her hurrying away.
+
+The turn comes *after* — Ryabovich returns to his comrades and the world looks different. The evening that was boring is now charged.
+
+Then the brilliance: months later, Ryabovich returns to the same estate. No kiss. The river flows, the night is the same, nothing happens. The second scene's turn is the *absence* of a turn — nothing changes, and that non-change devastates more than the kiss elevated.
+
+### Jackson — "The Lottery": The Crucible Nobody Escapes
+
+The townspeople *must* participate. The ritual holds them. No one can refuse without defying the entire community, generations of tradition, the fabric of their social world.
+
+When Tessie Hutchinson protests, she doesn't refuse to participate — she says Bill didn't have enough time to choose. She challenges the *execution* of the system, not the system itself. The crucible is so complete that even the victim can't conceive of rejecting it. She can only argue she should have lost *differently*.
+
+That's a crucible at maximum force: it doesn't just prevent characters from leaving. It prevents them from *imagining* leaving.
+
 ## Diagnostic Questions
 
 When a scene feels off, ask:

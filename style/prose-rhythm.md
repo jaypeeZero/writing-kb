@@ -125,6 +125,40 @@ Overwriting is the attempt to make prose do more than the moment requires. It is
 
 **Front-loaded sentences.** Starting every sentence with a subordinate clause: "Walking across the room, she picked up the glass. Turning to face him, she set it down. Hearing the sound, she froze." The participial phrase opener, used once, is fine. Used repeatedly, it creates a numbing rhythm and implies simultaneous action that often isn't.
 
+## From the Masters
+
+### McCarthy — Sentence Length as Violence
+
+From *Blood Meridian*, the short sentences:
+
+> They rode on. The sky was dark. A single star to the north. They rode on.
+
+Then the long ones — legions of horribles described in single sentences that run for half a page, accumulating costumes, weapons, and blood in subordinate clauses that refuse to let the reader breathe.
+
+The contrast is the lesson. Short sentences create silence, emptiness, endurance. Long sentences create overwhelming accumulation. The reader physically experiences desolation and chaos through sentence length alone.
+
+### Didion — Rhythm as Thought
+
+From "The White Album":
+
+> We tell ourselves stories in order to live.
+
+Then the parallel structures accumulate: "The princess is caged in the consulate. The man with the candy will lead the children into the sea." Short declaratives, each a story compressed to one line. The rhythm is incantatory — the repetition creates a drumbeat that makes the content feel both urgent and inevitable. Didion's prose *thinks in rhythm*.
+
+### Woolf — Psychic Distance in Motion
+
+From *Mrs. Dalloway*:
+
+> What a lark! What a plunge!
+
+Intimate, exclamatory, inside Clarissa's head. Then: "For so it had always seemed to her" — narrator distance, reflecting on the character. Then back: "which she could hear now" — sensory detail returns us to present consciousness. Woolf moves fluidly between distances in a single paragraph because each shift follows Clarissa's associative mind.
+
+### Morrison — Sound as Meaning
+
+*Beloved*: "124 was spiteful. Full of a baby's venom."
+
+Hard consonants: spiteful, full, baby's, venom. Morrison chose "spiteful" over "angry" because of the *spit* in it — the word sounds like what it means. "Baby's venom" juxtaposes soft and hard, innocence and poison, mirroring the novel's central horror. Morrison described wanting the novel's sound to be "an inner ear sound or a sound just beyond hearing, infusing the text with a musical emphasis." She separated "Full of a baby's venom" into its own sentence-fragment to put the stress on *full* — a stress that would disappear in a comma splice.
+
 ## Diagnostic Questions
 
 When prose feels wrong but you can't name why:

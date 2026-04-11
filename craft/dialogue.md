@@ -123,6 +123,28 @@ On the page, silence lives in beats ("He looked out the window"), in subject cha
 
 **Conflict without stakes.** Characters argue, but nothing is at risk. They can walk away, agree to disagree, or simply not care. Dialogue conflict only works when something the character values is on the line.
 
+## From the Masters
+
+### Hemingway — "Hills Like White Elephants"
+
+The entire story is a dialogue about abortion without the word appearing once. 144 lines of direct speech, almost no narration. Hemingway removes himself entirely — no "she said bitterly," no "he spoke with forced calm."
+
+> "It's really an awfully simple operation, Jig," the man said. "It's not really an operation at all."
+
+The repetition of "really" is the tell — not redundancy but *insistence*. He names the operation then erases it in the same breath: "not really an operation at all." That's a tactical move: words as camouflage. Her silence that follows isn't passivity — it's her countermove. As one analysis put it, "every line spoken is an attempt. Every response is either resistance or retreat."
+
+Later: "No, you wouldn't have," she said — five words carrying contempt, hurt, and the full inventory of a failing relationship. Hemingway proves that what characters *don't* say drives the scene.
+
+### Carver — "What We Talk About When We Talk About Love"
+
+> "The kind of love I'm talking about is. The kind of love I'm talking about, you don't try to kill people."
+
+Broken syntax *is* the struggle. Terri can't finish her sentence. She starts, restarts, redefines. The repetition, the false start, the pivot to negation instead of definition — Carver doesn't describe confusion. The dialogue's rhythm performs it.
+
+### Pinter — The Homecoming
+
+Pinter's characters don't answer the question asked. They don't acknowledge what anyone else said. Five people in a room, five parallel monologues sharing airspace. The disconnection *is* the meaning. Pinter proved that families don't communicate — they broadcast at each other.
+
 ## Diagnostic Questions
 
 When dialogue feels flat, ask:
