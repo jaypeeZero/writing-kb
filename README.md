@@ -24,3 +24,29 @@ Think of it as having instant access to writing craft knowledge—structure, sty
 Connect any MCP-compatible client to query writing knowledge, explore craft concepts, or work through specific writing challenges.
 
 The goal: make you a more skilled, intentional writer—not replace your voice.
+
+## Running the Server
+
+Two entrypoints, both backed by the same tools and resources:
+
+### stdio (local)
+
+Spawned per-client; re-parses all KB files on startup so edits are picked up immediately.
+
+```bash
+uv run python server_stdio.py
+```
+
+Add to Claude Code:
+
+```bash
+claude mcp add -s user writing-kb -- uv run --directory /Users/jw/code/writing-kb python server_stdio.py
+```
+
+### Streamable HTTP (remote)
+
+Used for the hosted deployment on Render.
+
+```bash
+uv run python server.py   # listens on $PORT (default 10000)
+```
