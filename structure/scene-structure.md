@@ -10,6 +10,8 @@ The POV character wants something. It can be small (find shelter, get informatio
 ### 2. Resistance
 Something opposes the goal. Another character's agenda, a physical obstacle, an internal conflict, a ticking clock. Without friction, the scene has no engine. Two characters who agree with each other and cooperate pleasantly are not in a scene — they're in an information exchange.
 
+The deepest source of resistance is the protagonist's **misbelief** — the load-bearing worldview they've carried into the scene. Physical obstacles and antagonist agendas create surface friction; the misbelief creates internal friction that shapes how the character responds to everything else. A scene calibrated to threaten the misbelief directly doesn't need to invent resistance — the character generates it themselves. See: *craft/character → The Misbelief as Plot Engine*.
+
 ### 3. Turn
 The character's situation, understanding, or options must be different at the end of the scene than at the beginning. This is non-negotiable. The turn can come from:
 
