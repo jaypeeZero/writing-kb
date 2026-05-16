@@ -1,0 +1,350 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>Fiction Cheatsheet</title>
+  <style>
+    @page {
+      size: letter landscape;
+      margin: 0.45in 0.5in;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Helvetica Neue', Arial, sans-serif;
+      font-size: 9pt;
+      line-height: 1.45;
+      color: #1a1a1a;
+      background: white;
+    }
+
+    .page {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      grid-template-rows: auto 1fr;
+      gap: 0 18px;
+    }
+
+    .masthead {
+      grid-column: 1 / -1;
+      display: flex;
+      align-items: baseline;
+      justify-content: space-between;
+      border-bottom: 2.5px solid #111;
+      padding-bottom: 5px;
+      margin-bottom: 12px;
+    }
+
+    .masthead-title {
+      font-size: 15pt;
+      font-weight: 800;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+    }
+
+    .masthead-sub {
+      font-size: 8pt;
+      color: #888;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+    }
+
+    .column {
+      display: flex;
+      flex-direction: column;
+      gap: 9px;
+    }
+
+    .col-header {
+      font-size: 8pt;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 0.14em;
+      color: white;
+      padding: 5px 9px 4px;
+      border-radius: 3px;
+    }
+
+    .char .col-header  { background: #1a5fa8; }
+    .scene .col-header { background: #1a7a45; }
+    .plot .col-header  { background: #a83220; }
+
+    .block {
+      padding: 0;
+    }
+
+    .block-label {
+      font-size: 7.5pt;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: #888;
+      border-bottom: 1px solid #e0e0e0;
+      padding-bottom: 2px;
+      margin-bottom: 4px;
+    }
+
+    .axiom {
+      font-size: 10pt;
+      font-weight: 700;
+      line-height: 1.3;
+      margin-bottom: 3px;
+    }
+
+    .axiom-small {
+      font-size: 9pt;
+      font-weight: 700;
+      line-height: 1.3;
+      margin-bottom: 3px;
+    }
+
+    ul {
+      list-style: none;
+      padding: 0;
+    }
+
+    li {
+      padding-left: 11px;
+      position: relative;
+      margin-bottom: 2px;
+      font-size: 8.5pt;
+      line-height: 1.4;
+    }
+
+    li::before {
+      content: "–";
+      position: absolute;
+      left: 0;
+      color: #bbb;
+    }
+
+    li strong { font-weight: 700; color: #111; }
+    li em { font-style: italic; }
+
+    .sub {
+      margin-top: 2px;
+      padding-left: 10px;
+    }
+
+    .sub li {
+      font-size: 8pt;
+      color: #444;
+      margin-bottom: 1px;
+    }
+
+    .sub li::before { content: "·"; color: #ccc; }
+
+    .pill {
+      display: inline-block;
+      font-size: 8pt;
+      font-family: 'Menlo', 'Courier New', monospace;
+      background: #f3f3f3;
+      border: 1px solid #ddd;
+      border-radius: 3px;
+      padding: 3px 7px;
+      margin: 3px 0;
+      line-height: 1.5;
+      width: 100%;
+    }
+
+    .checks {
+      margin-top: auto;
+      background: #f8f8f8;
+      border-left: 3px solid #ccc;
+      padding: 6px 8px;
+    }
+
+    .char  .checks { border-left-color: #1a5fa8; }
+    .scene .checks { border-left-color: #1a7a45; }
+    .plot  .checks { border-left-color: #a83220; }
+
+    .checks .block-label {
+      border-bottom: none;
+      margin-bottom: 3px;
+      color: #666;
+    }
+
+    .checks li { font-size: 8pt; color: #333; }
+
+    .red { color: #b03020; }
+    .red li::before { color: #e08070; }
+  </style>
+</head>
+<body>
+<div class="page">
+
+  <div class="masthead">
+    <div class="masthead-title">Fiction Cheatsheet</div>
+    <div class="masthead-sub">Character · Scene · Plot &amp; Tension</div>
+  </div>
+
+  <!-- ── CHARACTER ─────────────────────────────── -->
+  <div class="column char">
+    <div class="col-header">Character</div>
+
+    <div class="block">
+      <div class="axiom">"Action is character."</div>
+      <ul>
+        <li>What they do when it <em>costs</em> them something</li>
+        <li>Performance drops → character surfaces</li>
+      </ul>
+    </div>
+
+    <div class="block">
+      <div class="block-label">Want vs. Need</div>
+      <ul>
+        <li><strong>Want</strong> — conscious goal</li>
+        <li><strong>Need</strong> — unconscious truth</li>
+        <li>Story lives in the gap between them</li>
+      </ul>
+    </div>
+
+    <div class="block">
+      <div class="block-label">Misbelief</div>
+      <ul>
+        <li>Load-bearing wrong belief carried into the story</li>
+        <li>Must be <em>one precise sentence</em>: belief + origin + protective behavior</li>
+        <li>"Trust issues" → nothing. "Believes vulnerability will be weaponized because her brother used her secrets against her" → scenes</li>
+        <li>When threatened: character generates their own resistance — may look like rationalization or avoidance, not stubbornness</li>
+      </ul>
+      <div class="pill">Test: does this scene threaten the misbelief? If no → scene is inert.</div>
+    </div>
+
+    <div class="block">
+      <div class="block-label">Reveal</div>
+      <ul>
+        <li>Choice under pressure = X-ray. Breaking point, not success.</li>
+        <li><strong>Omission</strong> — what they won't say reveals as much as action</li>
+        <li>One precise detail &gt; paragraph of description</li>
+      </ul>
+    </div>
+
+    <div class="checks">
+      <div class="block-label">Quick Checks</div>
+      <ul>
+        <li>What do they want? What do they <em>actually</em> need?</li>
+        <li>Is the misbelief precise enough to dictate behavior when threatened?</li>
+        <li>What will they never say?</li>
+        <li>Remove name &amp; description — known by choices alone?</li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- ── SCENE ──────────────────────────────────── -->
+  <div class="column scene">
+    <div class="col-header">Scene</div>
+
+    <div class="block">
+      <div class="axiom">Smallest unit that does work.<br>Nothing changes → cut it.</div>
+    </div>
+
+    <div class="block">
+      <div class="block-label">Three Bones</div>
+      <ul>
+        <li><strong>Goal</strong> — character wants something specific (not vague)</li>
+        <li><strong>Resistance</strong> — something opposes it</li>
+        <li><strong>Turn</strong> — situation or understanding different at the end</li>
+      </ul>
+    </div>
+
+    <div class="block">
+      <div class="block-label">Beat Shape</div>
+      <div class="pill">Goal → Friction → Escalate → Crisis → Choice → Resolution</div>
+      <ul>
+        <li>Crisis = two bad options (or two good ones that exclude each other)</li>
+        <li>Each beat raises stakes or narrows options — never same intensity twice</li>
+      </ul>
+    </div>
+
+    <div class="block">
+      <div class="block-label">Endings — Not Success</div>
+      <ul>
+        <li>Fail to get what they wanted</li>
+        <li>Get it — but it costs something</li>
+        <li>Get it — discover it wasn't what they needed</li>
+        <li>Worse new problem emerges from the attempt</li>
+        <li>Question raised remains unanswered</li>
+      </ul>
+    </div>
+
+    <div class="block">
+      <div class="block-label">Crucible &amp; Subtext</div>
+      <ul>
+        <li><strong>Crucible:</strong> characters can't leave — physical trap or motivation &gt; exit cost</li>
+        <li><strong>Subtext:</strong> gap between said and meant. Every character has a different agenda.</li>
+        <li>Dialogue = trying to get what you want from someone, not exchanging info</li>
+      </ul>
+    </div>
+
+    <div class="checks">
+      <div class="block-label">Quick Checks</div>
+      <ul>
+        <li>What does the character want?</li>
+        <li>What's stopping them?</li>
+        <li>What's different at the end?</li>
+        <li>Why can't they leave?</li>
+        <li>Does this scene's outcome force the next one?</li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- ── PLOT & TENSION ─────────────────────────── -->
+  <div class="column plot">
+    <div class="col-header">Plot &amp; Tension</div>
+
+    <div class="block">
+      <div class="axiom">Plot = causal chain.</div>
+      <ul>
+        <li>Scene outcome → next scene's input</li>
+        <li>Scenes rearrangeable = episodes, not plot</li>
+      </ul>
+    </div>
+
+    <div class="block">
+      <div class="block-label">Tension</div>
+      <div class="axiom-small">Question + withheld answer.<br>Not action. Not conflict.</div>
+      <ul>
+        <li><strong>Dramatic irony</strong> — reader knows what character doesn't</li>
+        <li><strong>Ticking clock</strong> — any resource running out</li>
+        <li><strong>Constraint</strong> — can't-act generates more tension than action</li>
+        <li><strong>Uncertainty</strong> — certainty kills tension</li>
+      </ul>
+    </div>
+
+    <div class="block">
+      <div class="block-label">Pacing</div>
+      <ul>
+        <li><strong>Scene</strong> = real time → moments that change things</li>
+        <li><strong>Summary</strong> = compressed → transitions, routines</li>
+        <li>Page time ∝ emotional weight</li>
+        <li>Climax = max expansion. Resolution = compression.</li>
+      </ul>
+      <div class="pill">Short sentences = fast · Long = slow · Solo ¶ = brake</div>
+    </div>
+
+    <div class="block">
+      <div class="block-label red">Avoid</div>
+      <ul class="red">
+        <li>Telegraphing — "she didn't know it was the last time"</li>
+        <li>Naming tension — "the room was tense"</li>
+        <li>False tension — reader knows the character is fine</li>
+        <li>Constant max tension — nothing has weight</li>
+        <li>Stakes without investment — reader doesn't care</li>
+      </ul>
+    </div>
+
+    <div class="checks">
+      <div class="block-label">Quick Checks</div>
+      <ul>
+        <li>What question is the reader holding right now?</li>
+        <li>What does the reader know that the character doesn't?</li>
+        <li>What can't this character do or say?</li>
+        <li>What moments deserve the most page time — getting it?</li>
+      </ul>
+    </div>
+  </div>
+
+</div>
+</body>
+</html>
