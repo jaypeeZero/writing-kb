@@ -51,6 +51,23 @@ The order matters. If you know where you start and end, you know what the midpoi
 
 **When this framework helps:** as a planning tool for writers who find Save the Cat's 15 beats too granular and three-act too vague. The write-the-endpoints-first method is useful regardless of which framework you ultimately use.
 
+## The Eight-Point Arc (Nigel Watts)
+
+From Nigel Watts's *Write a Novel and Get It Published* (1996), this is the framework that scales most cleanly between levels — the same eight beats describe a single chapter and an entire novel. Eight points: **Stasis, Trigger, Quest, Surprise, Critical Choice, Climax, Reversal, Resolution.**
+
+- **Stasis** — the ordinary world, the normal that's about to break.
+- **Trigger** — the inciting incident; something largely outside the protagonist's control upends the stasis.
+- **Quest** — the trigger produces a goal. The protagonist sets out after it.
+- **Surprise** — the bulk of the story: complications, obstacles, reversals. Watts's caution is the useful part — surprises must be "unexpected but plausible." A surprise the reader could have predicted is inert; one that comes from nowhere reads as cheating.
+- **Critical Choice** — the protagonist must *decide*, under maximum pressure, between two paths. Watts insists this be a genuine choice the character makes, not an accident that befalls them: it is at the moment of choice, he argues, that true character is revealed. This is where the eight-point arc earns its keep — it forces the turn to hinge on *agency*, not luck.
+- **Climax** — the highest point of tension, the consequence of the critical choice.
+- **Reversal** — the change in status the climax produces. The protagonist, and their world, is now measurably different.
+- **Resolution** — return to a new stasis, transformed.
+
+**When this framework helps:** it's the best bridge between scene-level and story-level structure, because the same eight beats describe both (see `structure/scene-structure`). Its insistence that the Critical Choice *precede* the Climax is a built-in corrective to plots where the hero wins by accident — the framework structurally forbids it.
+
+**Its weakness:** "Surprise" is doing enormous work as a single beat covering the entire middle. Like three-act's Confrontation, it tells you *that* the middle should escalate but not *how* to keep it from sagging. Pair it with a midpoint (see `structure/act-structure`).
+
 ## Kishōtenketsu (Four-Act, No Conflict)
 
 The dominant narrative structure in classical Chinese, Korean, and Japanese literature. Four parts: **Ki (introduction), Shō (development), Ten (twist), Ketsu (conclusion).**
