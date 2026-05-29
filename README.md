@@ -43,6 +43,29 @@ Add to Claude Code:
 claude mcp add -s user writing-kb -- uv run --directory /Users/jw/code/writing-kb python server_stdio.py
 ```
 
+### Streamable HTTP (Docker container)
+
+Runs as a long-lived container exposing MCP over HTTP on port 8880 — the same
+pattern as the Cognee and Viking knowledge-base MCPs.
+
+```bash
+docker compose up -d --build   # or: make up
+```
+
+- Health check: `curl http://localhost:8880/health`
+- MCP endpoint: `http://localhost:8880/mcp`
+
+KB content (`craft/`, `style/`, `structure/`) is bind-mounted, so `kb_read`,
+`kb_list_topics`, and resources reflect edits live. `kb_search` builds its index
+at startup — run `docker compose restart` (or `make restart`) to pick up edits
+in search results.
+
+Register with Claude Code:
+
+```bash
+claude mcp add -s user -t http writing-kb http://localhost:8880/mcp
+```
+
 ### Streamable HTTP (remote)
 
 Used for the hosted deployment on Render.

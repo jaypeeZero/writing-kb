@@ -8,5 +8,5 @@ COPY writing_kb/ writing_kb/
 COPY craft/ craft/
 COPY style/ style/
 COPY structure/ structure/
-EXPOSE 10000
+EXPOSE 8880
 CMD ["uv", "run", "python", "server.py"]

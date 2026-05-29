@@ -1,0 +1,23 @@
+services:
+  writing-kb:
+    build: .
+    container_name: writing-kb
+    image: writing-kb
+    restart: unless-stopped
+    environment:
+      PORT: "8880"
+    ports:
+      - "8880:8880"
+    # Bind-mount KB content so kb_read / kb_list_topics / resources reflect edits
+    # live. kb_search caches its index at startup — run `docker compose restart`
+    # to pick up edits in search results.
+    volumes:
+      - ./craft:/app/craft:ro
+      - ./style:/app/style:ro
+      - ./structure:/app/structure:ro
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8880/health')"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 5s
