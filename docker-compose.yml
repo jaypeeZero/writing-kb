@@ -15,6 +15,7 @@ services:
       - ./craft:/app/craft:ro
       - ./style:/app/style:ro
       - ./structure:/app/structure:ro
+      - ./examples:/app/examples:ro
     healthcheck:
       test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8880/health')"]
       interval: 30s

@@ -18,6 +18,9 @@ Think of it as having instant access to writing craft knowledge—structure, sty
 - `craft/` - Technique-specific guidance (dialogue, voice, POV, etc.)
 - `style/` - Prose-level craft (rhythm, word choice, sentence variety)
 - `structure/` - Scene and story architecture
+- `examples/` - Worked examples: self-contained passages with the **actual text embedded** (no need for the source book), each tagged by technique and searchable as a first-class hit
+
+> Examples are organised so each `##` section is its own retrievable passage. Keep these files purely examples (no meta/notes) so craft searches return real text, not pointers. Roadmap & verification notes live in `~/code/plans/writing-kb/examples-bank/`.
 
 ## Using This MCP
 

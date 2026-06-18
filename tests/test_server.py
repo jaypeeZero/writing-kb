@@ -564,3 +564,30 @@ class TestKbSearch:
         assert not search_module._search_index._indexed
         await kb_search("dialogue")
         assert search_module._search_index._indexed
+
+
+class TestExamplesBank:
+    """The examples/ dir is a first-class, searchable content directory."""
+
+    def test_examples_is_a_content_dir(self):
+        from writing_kb.config import CONTENT_DIRS
+        assert "examples" in CONTENT_DIRS
+
+    @pytest.mark.asyncio
+    async def test_list_topics_includes_examples_category(self):
+        result = await kb_list_topics()
+        assert "## examples" in result
+        assert "- guy-gavriel-kay" in result
+
+    @pytest.mark.asyncio
+    async def test_individual_example_is_a_retrievable_hit(self):
+        # A natural-language craft query should surface the example passage itself —
+        # returning the actual embedded text, not a pointer to a book the user lacks.
+        result = await kb_search("Tim O'Brien The Things They Carried inventory of objects")
+        assert "examples/telling-detail.md" in result
+        assert "shot in the head" in result
+
+    @pytest.mark.asyncio
+    async def test_kay_examples_are_searchable(self):
+        result = await kb_search("Guy Gavriel Kay prolepsis flash forward")
+        assert "examples/guy-gavriel-kay.md" in result
